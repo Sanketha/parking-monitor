@@ -13,6 +13,7 @@ const pool = new Pool({
 
 // Get slot by ID (with status)
 async function getSlot(slotId) {
+  console.log(`DB: getSlot called for slotId: ${slotId}`);
   const res = await pool.query(
     `SELECT ps.slot_id, ps.lat, ps.lng, ps.is_active,
             ss.status, ss.updated_at, ss.user_id, ss.duration
@@ -36,23 +37,27 @@ async function insertSlot(slotId, lat, lng, isActive = true) {
 
 // Get all slots with their status
 async function getAllSlots() {
+  console.log('DB: getAllSlots called');
   const result = await pool.query(
     `SELECT ps.slot_id, ps.lat, ps.lng, ps.is_active,
             ss.status, ss.updated_at
      FROM parking_slots ps
      LEFT JOIN slot_status ss ON ps.slot_id = ss.slot_id`
   );
+  console.log('DB: getAllSlots result:', result.rows);
   return result.rows;
 }
 
 // Get all free slots
 async function getFreeSlots() {
+  console.log('DB: getFreeSlots called');
   const result = await pool.query(
     `SELECT ps.slot_id, ps.lat, ps.lng
      FROM parking_slots ps
      JOIN slot_status ss ON ps.slot_id = ss.slot_id
      WHERE ss.status = 'free'`
   );
+  console.log('DB: getFreeSlots result:', result.rows);
   return result.rows;
 }
 
@@ -109,12 +114,24 @@ async function getSlotStatus(slotId) {
 
 // Get all reserved slots
 async function getReservedSlots() {
+  console.log('DB: getReservedSlots called');
   const result = await pool.query(
     `SELECT ps.slot_id, ps.lat, ps.lng, ss.user_id, ss.duration, ss.updated_at
      FROM parking_slots ps
      JOIN slot_status ss ON ps.slot_id = ss.slot_id
      WHERE ss.status = 'reserved'`
   );
+  console.log('DB: getReservedSlots result:', result.rows);
+  return result.rows;
+}
+
+//getAllSlotHistory
+async function getAllSlotHistory() {
+  console.log('DB: getAllSlotHistory called');
+  const result = await pool.query(
+    `SELECT * FROM status_history ORDER BY timestamp DESC`
+  );
+  console.log('DB: getAllSlotHistory result:', result.rows);
   return result.rows;
 }
 
@@ -127,5 +144,6 @@ module.exports = {
   updateSlotStatus,
   getSlotStatus,
   isReservationActive,
-  getReservedSlots
+  getReservedSlots,
+  getAllSlotHistory
 };
